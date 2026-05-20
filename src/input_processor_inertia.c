@@ -144,7 +144,7 @@ static void move_decay_callback(struct k_work *work) {
         k_mutex_unlock(&data->lock);
 
         zmk_hid_mouse_movement_set(0, 0);
-        zmk_endpoint_send_mouse_report();
+        zmk_endpoints_send_mouse_report();
         LOG_DBG("Move Inertia stopped naturally.");
         return;
     }
@@ -161,7 +161,7 @@ static void move_decay_callback(struct k_work *work) {
 
     // Call HID outside the lock to avoid blocking other input threads
     zmk_hid_mouse_movement_set(next_vx, next_vy);
-    zmk_endpoint_send_mouse_report();
+    zmk_endpoints_send_mouse_report();
     // Clear HID state to prevent conflict and jumping cursor when other ZMK inputs (e.g., clicks) occur
     zmk_hid_mouse_movement_set(0, 0);
 }
@@ -204,7 +204,7 @@ static void scroll_decay_callback(struct k_work *work) {
         k_mutex_unlock(&data->lock);
 
         zmk_hid_mouse_scroll_set(0, 0);
-        zmk_endpoint_send_mouse_report();
+        zmk_endpoints_send_mouse_report();
         LOG_DBG("Scroll Inertia stopped naturally.");
         return;
     }
@@ -221,7 +221,7 @@ static void scroll_decay_callback(struct k_work *work) {
 
     // Call HID outside the lock to avoid blocking other input threads
     zmk_hid_mouse_scroll_set(next_vx, next_vy);
-    zmk_endpoint_send_mouse_report();
+    zmk_endpoints_send_mouse_report();
     // Clear HID state to prevent scroll remnants from interfering with other inputs
     zmk_hid_mouse_scroll_set(0, 0);
 }

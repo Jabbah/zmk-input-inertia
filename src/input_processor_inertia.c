@@ -235,12 +235,43 @@ static int inertia_handle_event(const struct device *dev, struct input_event *ev
     ARG_UNUSED(param2);
     ARG_UNUSED(state);
 
-    if (event->type != INPUT_EV_REL) {
+    struct inertia_data *data = (struct inertia_data *)dev->data;
+    const struct inertia_config *cfg = dev->config;
+
+    if (event->type == INPUT_EV_KEY && event->code == INPUT_BTN_TOUCH && event->value) {
+        k_mutex_lock(&data->lock, K_FOREVER);
+        if (data->state.move_active) {
+            k_work_cancel_delayable(&data->move_work);
+            data->state.move_active = false;
+            data->state.move_vx = 0;
+            data->state.move_vy = 0;
+            data->state.move_ema_vx = 0;
+            data->state.move_ema_vy = 0;
+            data->state.move_remainder_x_q8 = 0;
+            data->state.move_remainder_y_q8 = 0;
+            data->state.move_is_inertial = false;
+            zmk_hid_mouse_movement_set(0, 0);
+        }
+        if (data->state.scroll_active) {
+            k_work_cancel_delayable(&data->scroll_work);
+            data->state.scroll_active = false;
+            data->state.scroll_vx = 0;
+            data->state.scroll_vy = 0;
+            data->state.scroll_ema_vx = 0;
+            data->state.scroll_ema_vy = 0;
+            data->state.scroll_remainder_x_q8 = 0;
+            data->state.scroll_remainder_y_q8 = 0;
+            data->state.scroll_is_inertial = false;
+            zmk_hid_mouse_scroll_set(0, 0);
+        }
+        k_mutex_unlock(&data->lock);
+        LOG_DBG("Inertia cancelled by touch-down.");
         return ZMK_INPUT_PROC_CONTINUE;
     }
 
-    struct inertia_data *data = (struct inertia_data *)dev->data;
-    const struct inertia_config *cfg = dev->config;
+    if (event->type != INPUT_EV_REL) {
+        return ZMK_INPUT_PROC_CONTINUE;
+    }
 
     // --- MOUSE MOVEMENT ---
     if (event->code == INPUT_REL_X || event->code == INPUT_REL_Y) {

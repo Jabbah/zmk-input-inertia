@@ -64,3 +64,17 @@ properties:
     required: true
     description: |
       Minimum scroll velocity to continue inertia.
+  scroll-velocity-window-ms:
+    type: int
+    default: 50
+    description: |
+      Time window (ms) over which scroll distance is summed to measure velocity
+      when inertia starts on touch release (requires INPUT_BTN_TOUCH events).
+
+  scroll-velocity-history-ms:
+    type: int
+    default: 100
+    description: |
+      How far back (ms) before touch release to look for the fastest scroll window.
+      Ignores the slowdown as fingers leave the pad; a pause longer than this before
+      lifting means no inertia.
